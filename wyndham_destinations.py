@@ -1,9 +1,6 @@
-import scrapy
-
-
 class wynSpider(scrapy.Spider):
     name = "wynSpider"
-    start_urls = ['https://clubwyndham.wyndhamdestinations.com/us/en/resorts/wyndham-hotels-resorts/united-states-of-america/california/palm-springs/worldmark-palm-springs']
+    start_urls = ['https://clubwyndham.wyndhamdestinations.com/us/en/resorts/wyndham-hotels-resorts/united-states-of-america/florida/orlando/worldmark-orlando-kingstown-reef']
 
     def parse(self, response):
         header = '//*[@* = "column is-8"]'
@@ -13,14 +10,14 @@ class wynSpider(scrapy.Spider):
             addressSELECTOR = './/h2[@class = "wyn-headline__subtitle"]/text()'
             telephoneSELECTOR = './/a[@class = "wyn-resort-phoneNumber"]/text()'
             highlightSELECTOR = './/div[@class = "wyn-js-expand-disabled wyn-expandable-card "]/p/text()'
-            resort_amenitiesSELECTOR = './/span[@class = "wyn-js-expand-disabled wyn-expandable-card "]/text()'
+            resort_amenitiesSELECTOR = './/ul/li/span/span[@class = "wyn-icon__label "]/text()'
 
             yield {
-                'name': wyndham.xpath(nameSELECTOR).extract_first().strip(),
-                'address': wyndham.xpath(addressSELECTOR).extract_first().strip(),
-                'telephone': wyndham.xpath(telephoneSELECTOR).extract_first().strip(),
-                'highlight': wyndham.xpath(highlightSELECTOR).extract_first().strip(),
-                'resort_amenities': wyndham.xpath(resort_amenitiesSELECTOR).extract()
+                'name': wyndham.xpath(nameSELECTOR).get().strip(),
+                'address': wyndham.xpath(addressSELECTOR).get().strip(),
+                'telephone': wyndham.xpath(telephoneSELECTOR).get().strip(),
+                'highlight': wyndham.xpath(highlightSELECTOR).get().strip(),
+                'resort_amenities': wyndham.xpath(resort_amenitiesSELECTOR).getall()
             }
 
         unit = '//*[@* = "wyn-bedroom-card"]'
@@ -33,9 +30,10 @@ class wynSpider(scrapy.Spider):
             room_amenitiesSELECTOR = './/li[@class = "wyn-color-grey wyn-type-body-2"]/text()'
 
             yield {
-                'room_type': bedroom.xpath(room_typeSELECTOR).extract_first().strip(),
-                'sqft_guestCount': bedroom.xpath(sqft_guestCountSELECTOR).extract_first().strip(),
-                'bed_type': bedroom.xpath(bed_typeSELECTOR).extract_first().strip(),
-                'num_baths': bedroom.xpath(num_bathsSELECTOR).extract_first().strip(),
-                'amenities': bedroom.xpath(room_amenitiesSELECTOR).extract_first()
+                'room_type': bedroom.xpath(room_typeSELECTOR).get().strip(),
+                'sqft_guestCount': bedroom.xpath(sqft_guestCountSELECTOR).get().strip(),
+                'bed_type': bedroom.xpath(bed_typeSELECTOR).get().strip(),
+                'num_baths': bedroom.xpath(num_bathsSELECTOR).get().strip(),
+                'amenities': bedroom.xpath(room_amenitiesSELECTOR).getall()
             }
+
