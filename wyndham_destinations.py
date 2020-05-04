@@ -28,8 +28,8 @@ class wynSpider(scrapy.Spider):
                 'resort_amenities': wyndham.xpath(resort_amenitiesSELECTOR).getall()
             }
 
-            # This for loop gets the room data; name, square feet, bed types, max guests,, number of bathrooms,
-            # type of kitchen, Washer/Dryer (if applicable), amenities, and images(not yet implemented)
+        # This for loop gets the room data; name, square feet, bed types, max guests,, number of bathrooms,
+        # type of kitchen, Washer/Dryer (if applicable), amenities, and images(not yet implemented)
         unit = '//*[@* = "wyn-bedroom-card"]'
         for bedroom in response.xpath(unit):
 
@@ -67,10 +67,11 @@ class wynSpider(scrapy.Spider):
             # strips the room amenities list of all extra spaces and \n
             ls = bedroom.xpath(room_amenitiesSELECTOR).getall()
             room_amenities = [amenity.strip() for amenity in ls]
+
             # This contains both the square feet and guest count per room
             sqft_guest = bedroom.xpath(sqft_guestCountSELECTOR).get().strip()
-            # pulls just the square feet for each room
-            sqft_pattern = re.compile('\d.*\d\d')
+            # pulls just the square feet for each room with RegEx
+            sqft_pattern = re.compile(r'\d*,?\d+\s?\-?\s?\d*,?\d+')
             sqft = re.findall(sqft_pattern, sqft_guest)
             # grabs square feet and max_guest count per room and puts them into an array
             # to pull max_guest
@@ -78,29 +79,40 @@ class wynSpider(scrapy.Spider):
             for guest in sqft_guest.split():
                 if guest.isdigit():
                     max_guest.append(int(guest))
+
             # Pulls type of kitchen; Full, Mini, Partial, None, Varies
             kitchen_varieties = 'Kitchen:'
             kitchen = list(
                 filter(lambda x: kitchen_varieties in x, room_amenities))
+
             # Pulls Washer/Dryer amenity if available
             washer_amenity = 'Washer'
             washer_dryer = list(
                 filter(lambda x: washer_amenity in x, room_amenities))
+
             # Extracts the washer/dryer and kitchen type from the room_amenities list
             room_amenities = [
                 x for x in room_amenities if not x.startswith('Kitchen:')]
             room_amenities = [
                 x for x in room_amenities if not x.startswith('Washer')]
 
+            # Strips all but the number for bathrooms
+            bathrooms = bedroom.xpath(num_bathsSELECTOR).get().strip()
+            bathroom = []
+            for bath in bathrooms.split():
+                if bath.isdigit():
+                    bathroom.append(int(bath))
+
             yield {
                 'room_type': bedroom.xpath(room_type_1SELECTOR).get().strip(),
-                'room_label': bedroom.xpath(room_type_2SELECTOR).get().strip(),
+                #Testing for second name of room
+                #'room_label': bedroom.xpath(room_type_2SELECTOR).get().strip(),
                 'bed_type': bedroom.xpath(bed_typeSELECTOR).get().strip(),
                 # [-1] pulls the last number from the array containing square feet and max_guests
                 # in which the last number [-1] is the max_guest number
                 'sleeps': max_guest[-1],
-                'num_baths': bedroom.xpath(num_bathsSELECTOR).get().strip(),
-                'sqft': sqft,
+                'num_baths': bathroom,
+                'sqft': sqft[0],
                 'kitchen': kitchen,
                 'washer_dryer': washer_dryer,
                 'amenities': room_amenities
