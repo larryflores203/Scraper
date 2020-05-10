@@ -1,29 +1,38 @@
 import scrapy
 
+# Spider to crawl and extract resort data
 class wyn_spider(scrapy.Spider):
-
+    
+    #Enter exact resort at clubwyndham.wyndhamdestinations.com between quotes in start_urls 
+    #Ex: https://clubwyndham.wyndhamdestinations.com/us/en/resorts/wyndham-hotels-resorts/united-states-of-america/florida/daytona-beach/worldmark-ocean-walk#room0
     name = 'wyn_spider'
     start_urls = [
         'file:///private/var/folders/rs/scr10b_16_j_lrdktb1xx4340000gn/T/tmpd9upcn7o.html']
 
+    #This pulls resort level information such as name, address, description, and other information added in new update
+    #No phone number is present anywhere on the webpage to scrape
     def parse(self, response):
 
         # Name, Address, and a description/highlight quote
         nameSelector = './/section[@id= "description"]//h1[@class = "title-1 margin-0"]/text()'
         addressSelector = './/section[@id= "description"]//p[@class = "body-1 semibold margin-top-1"]/text()'
         descriptionSelector = './/section[@id= "description"]//div[@class="cell small-11"]/p[3]/text()'
+        #phoneSelector = 
 
         # other information/hints/amenities/and nearby activities
+        #Some new information was added here in site update
+        #littered with unicode
         resort_infoSelector = './/*[@id="resort-information"]/div/div/section/ul/li/span/text()'
         hintsSelector = './/div[@class="contentSlice section"]/div/div/div[2]/ul/li/text()'
         accessibilitySelector = '//*[@id="accessible-features"]/div/div/section/ul/li/span/text()'
         amenitiesSelector = './/*[@id="amenities"]/div/div/section/ul//li/span/text()'
         activitesSelector = '//*[@id="activities"]/div/div/section/ul//li/span/text()'
 
-        # removes unicode from quote: '\xa0'
+        # removes unicode from description: '\xa0'
         phrase = response.xpath(descriptionSelector).get().strip()
         clean_description = phrase.replace('\xa0', ' ')
-
+        
+        #returns scraped resort data
         yield {
             'resort_name': response.xpath(nameSelector).get(),
             'address': response.xpath(addressSelector).get(),
